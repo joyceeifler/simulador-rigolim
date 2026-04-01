@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rigolim Hair & Co — Simulador de Comissão</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#f0ece4;--cream2:#e8e2d8;--white:#faf8f5;
+  --dark:#1a1714;--brown:#8b6f5e;--brown2:#a8856e;
+  --rose:#c4917a;--rose2:#d4a896;--rose-light:#f2e8e3;
+  --text:#1a1714;--text2:#6b5f56;--text3:#9e9188;
+  --border:#d8d0c4;--border2:#c8bfb4;
+  --green:#4a7c59;--green-bg:rgba(74,124,89,0.1);
+  --red:#9b4040;--red-bg:rgba(155,64,64,0.1);
+  --amber:#9b7040;--amber-bg:rgba(155,112,64,0.1);
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 2px 20px rgba(26,23,20,0.08);
+  --shadow-lg:0 8px 40px rgba(26,23,20,0.12);
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);font-size:14px;line-height:1.5}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--cream);padding:24px}
+.login-logo{text-align:center;margin-bottom:32px}
+.logo-tagline{font-size:11px;font-weight:400;letter-spacing:.25em;color:var(--text2);text-transform:uppercase}
+.login-card{background:var(--white);border-radius:20px;padding:36px 40px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--dark);text-align:center;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:28px}
+.login-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;display:block}
+.login-field{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--dark);background:var(--cream);transition:border-color .2s;outline:none;margin-bottom:14px}
+.login-field:focus{border-color:var(--rose)}
+.user-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.user-btn{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--cream);cursor:pointer;transition:all .2s;text-align:left;width:100%}
+.user-btn:hover{border-color:var(--rose);background:var(--rose-light)}
+.user-btn.admin{border-color:var(--brown2)}
+.user-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.av-k{background:rgba(196,145,122,0.2);color:var(--rose)}
+.av-t{background:rgba(139,111,94,0.2);color:var(--brown)}
+.av-r{background:rgba(74,124,89,0.2);color:var(--green)}
+.av-admin{background:rgba(26,23,20,0.1);color:var(--dark)}
+.user-name{font-size:14px;font-weight:500;color:var(--dark)}
+.user-role{font-size:11px;color:var(--text3);margin-top:1px}
+.divider-or{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text3);font-size:12px}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
+.login-footer{text-align:center;margin-top:20px;font-size:12px;color:var(--text3)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.45);display:flex;align-items:center;justify-content:center;z-index:1000;padding:24px;backdrop-filter:blur(4px)}
+.modal-box{background:var(--white);border-radius:20px;padding:32px 36px;width:100%;max-width:380px;box-shadow:var(--shadow-lg);border:1px solid var(--border);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.modal-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;margin:0 auto 14px}
+.modal-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--dark);text-align:center;margin-bottom:4px}
+.modal-role{font-size:12px;color:var(--text3);text-align:center;margin-bottom:24px}
+.modal-error{background:var(--red-bg);border:1px solid rgba(155,64,64,0.2);border-radius:var(--radius-sm);padding:9px 14px;font-size:12px;color:var(--red);margin-bottom:14px;display:none;text-align:center}
+.modal-actions{display:flex;gap:10px;margin-top:6px}
+.modal-cancel{flex:1;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text2);cursor:pointer;transition:all .15s}
+.modal-cancel:hover{background:var(--cream)}
+.modal-enter{flex:2;padding:12px;border:none;border-radius:var(--radius-sm);background:var(--rose);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.modal-enter:hover{background:var(--brown2)}
+
+/* APP */
+#app{display:none;height:100vh;flex-direction:column}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 1px 8px rgba(26,23,20,0.06)}
+.top-logo{display:flex;align-items:center;gap:14px}
+.top-divider{width:1px;height:28px;background:var(--border)}
+.top-section{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--dark)}
+.top-right{display:flex;align-items:center;gap:12px}
+.user-chip{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--cream);border:1px solid var(--border);border-radius:20px;font-size:13px;color:var(--text2)}
+.logout-btn{padding:6px 14px;border:1px solid var(--border2);border-radius:20px;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s}
+.logout-btn:hover{background:var(--red-bg);border-color:rgba(155,64,64,0.3);color:var(--red)}
+.tabnav{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:4px;flex-shrink:0}
+.tab{padding:12px 18px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text3);transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--rose);border-bottom-color:var(--rose)}
+.panel{display:none}.panel.active{display:block}
+.content{flex:1;overflow-y:auto;padding:28px;background:var(--cream)}
+
+/* MONTH BAR */
+.month-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.month-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--dark)}
+.month-sub{font-size:13px;color:var(--text3);margin-top:2px}
+.month-btns{display:flex;gap:6px}
+.month-btn{padding:6px 18px;font-size:13px;font-weight:500;border:1.5px solid var(--border);border-radius:20px;background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
+.month-btn:hover{border-color:var(--rose);color:var(--rose)}
+.month-btn.sel{background:var(--rose);border-color:var(--rose);color:white}
+
+/* CARDS */
+.metrics-grid{display:grid;gap:14px;margin-bottom:22px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.metric{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:0 1px 6px rgba(26,23,20,0.04)}
+.metric-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.metric-value{font-size:20px;font-weight:500;color:var(--dark);font-family:'DM Mono',monospace}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 6px rgba(26,23,20,0.04);margin-bottom:18px}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:3px;height:11px;background:var(--rose);border-radius:2px;flex-shrink:0}
+
+/* INPUT CARD */
+.input-card{background:var(--white);border:1.5px solid var(--rose2);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 6px rgba(196,145,122,0.1);margin-bottom:18px}
+.input-card-title{font-size:11px;font-weight:600;color:var(--rose);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.input-card-title::before{content:'';width:3px;height:11px;background:var(--rose);border-radius:2px;flex-shrink:0}
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.input-group{display:flex;flex-direction:column;gap:5px}
+.input-group label{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+.edit-field{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:14px;color:var(--dark);background:var(--cream);outline:none;transition:border-color .2s}
+.edit-field:focus{border-color:var(--rose);background:var(--white)}
+.edit-hint{font-size:10px;color:var(--text3);margin-top:2px}
+.calc-btn{width:100%;margin-top:12px;padding:11px;border:none;border-radius:var(--radius-sm);background:var(--rose);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.calc-btn:hover{background:var(--brown2)}
+
+/* ROWS */
+.rrow{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.rrow:last-child{border-bottom:none}
+.rk{color:var(--text2)}
+.rk-name{font-weight:500;color:var(--dark);display:block}
+.rk-desc{font-size:11px;color:var(--text3);margin-top:2px;display:block}
+.rv{font-weight:500;color:var(--dark);font-family:'DM Mono',monospace;text-align:right}
+.rv-brl{font-size:12px;color:var(--green);font-family:'DM Mono',monospace;margin-top:2px;display:block;text-align:right}
+
+/* BADGES */
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;margin-top:3px}
+.b-hit{background:var(--green-bg);color:var(--green)}
+.b-miss{background:var(--red-bg);color:var(--red)}
+.b-na{background:var(--cream2);color:var(--text3)}
+
+/* BOXES */
+.total-box{background:linear-gradient(135deg,rgba(74,124,89,0.08),rgba(74,124,89,0.04));border:1.5px solid rgba(74,124,89,0.2);border-radius:var(--radius);padding:18px 22px;margin-bottom:14px}
+.total-label{font-size:11px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.total-value{font-size:28px;font-weight:500;color:#2d6b40;font-family:'DM Mono',monospace}
+.total-sub{font-size:12px;color:var(--green);margin-top:4px;opacity:.75}
+.before-box{background:rgba(155,64,64,0.06);border:1.5px solid rgba(155,64,64,0.15);border-radius:var(--radius);padding:18px 22px;margin-bottom:14px}
+.before-label{font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.before-value{font-size:26px;font-weight:500;color:var(--red);font-family:'DM Mono',monospace}
+.delta-box{border-radius:var(--radius-sm);padding:12px 16px;margin-top:12px}
+.delta-box.pos{background:var(--green-bg);border:1px solid rgba(74,124,89,0.2)}
+.delta-box.neg{background:var(--red-bg);border:1px solid rgba(155,64,64,0.15)}
+.delta-label{font-size:11px;margin-bottom:3px;opacity:.8}
+.delta-value{font-size:20px;font-weight:600;font-family:'DM Mono',monospace}
+.ref-box{background:var(--amber-bg);border:1px solid rgba(155,112,64,0.2);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:18px}
+
+/* CHIPS */
+.chip-w{background:rgba(139,111,94,0.12);color:var(--brown);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.chip-l{background:rgba(196,145,122,0.15);color:var(--rose);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+
+/* TABLE */
+.ctable{width:100%;border-collapse:collapse;font-size:13px}
+.ctable th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);padding:8px 12px;text-align:left;border-bottom:1.5px solid var(--border2)}
+.ctable th:not(:first-child){text-align:right}
+.ctable td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ctable td:not(:first-child){text-align:right;font-family:'DM Mono',monospace;font-size:12px}
+.ctable tr:last-child td{border-bottom:none}
+.ctable .tr-sep td{background:var(--cream);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:5px 12px;font-weight:600}
+.ctable .tr-bold td{font-weight:600;color:var(--dark)}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;font-family:'DM Mono',monospace}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- MODAL SENHA -->
+<div class="modal-overlay" id="pass-modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-avatar" id="modal-avatar"></div>
+    <div class="modal-name" id="modal-name"></div>
+    <div class="modal-role" id="modal-role"></div>
+    <div class="modal-error" id="modal-error">Senha incorreta. Tente novamente.</div>
+    <label class="login-label">Senha de acesso</label>
+    <input type="password" class="login-field" id="modal-pass" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')checkPassword();if(event.key==='Escape')closeModal()">
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-enter" onclick="checkPassword()">→ Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">
+    <svg width="220" height="58" viewBox="0 0 220 58" xmlns="http://www.w3.org/2000/svg">
+      <text x="0" y="46" font-family="'Cormorant Garamond',serif" font-size="54" font-weight="600" fill="#1a1714" letter-spacing="3">RIGOLIM</text>
+    </svg>
+    <div class="logo-tagline">Hair and Co</div>
+  </div>
+  <div class="login-card">
+    <div class="login-title">Simulador de Comissão</div>
+    <div class="login-sub">Selecione seu perfil para acessar</div>
+    <div class="user-list">
+      <button class="user-btn" onclick="openModal('kauane')">
+        <div class="user-avatar av-k">K</div>
+        <div><div class="user-name">Kauane</div><div class="user-role">Revenda · Vendedora</div></div>
+        <span style="margin-left:auto;opacity:.35;font-size:15px">&#128274;</span>
+      </button>
+      <button class="user-btn" onclick="openModal('talita')">
+        <div class="user-avatar av-t">T</div>
+        <div><div class="user-name">Talita</div><div class="user-role">Revenda · Vendedora</div></div>
+        <span style="margin-left:auto;opacity:.35;font-size:15px">&#128274;</span>
+      </button>
+      <button class="user-btn" onclick="openModal('railla')">
+        <div class="user-avatar av-r">R</div>
+        <div><div class="user-name">Railla</div><div class="user-role">Varejo · Vendedora</div></div>
+        <span style="margin-left:auto;opacity:.35;font-size:15px">&#128274;</span>
+      </button>
+    </div>
+    <div class="divider-or">ou acesse como gestor</div>
+    <button class="user-btn admin" onclick="openModal('admin')">
+      <div class="user-avatar av-admin">&#9733;</div>
+      <div><div class="user-name">Admin / CCO</div><div class="user-role">Ver todos os colaboradores</div></div>
+      <span style="margin-left:auto;opacity:.35;font-size:15px">&#128274;</span>
+    </button>
+  </div>
+  <div class="login-footer">Rigolim Hair and Co · 2026</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="top-logo">
+      <svg width="110" height="32" viewBox="0 0 220 58" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="46" font-family="'Cormorant Garamond',serif" font-size="54" font-weight="600" fill="#1a1714" letter-spacing="3">RIGOLIM</text>
+      </svg>
+      <div class="top-divider"></div>
+      <div class="top-section">Simulador de Comissão</div>
+    </div>
+    <div class="top-right">
+      <div class="user-chip" id="user-chip"></div>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+  <div class="tabnav" id="tabnav"></div>
+  <div class="content">
+    <div class="month-bar">
+      <div>
+        <div class="month-title" id="month-title">Abril</div>
+        <div class="month-sub">Multicanais 2026</div>
+      </div>
+      <div class="month-btns">
+        <button class="month-btn" onclick="setMonth(0,this)">Janeiro</button>
+        <button class="month-btn" onclick="setMonth(1,this)">Fevereiro</button>
+        <button class="month-btn" onclick="setMonth(2,this)">Março</button>
+        <button class="month-btn sel" onclick="setMonth(3,this)">Abril</button>
+      </div>
+    </div>
+    <div id="panels"></div>
+  </div>
+</div>
+
+<script>
+const fmt=n=>'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pp=n=>n.toFixed(2).replace('.',',')+' %';
+const pp1=n=>n.toFixed(1).replace('.',',')+' %';
+const meses=['Janeiro','Fevereiro','Março','Abril'];
+
+// ── SENHAS (edite aqui) ──────────────────────────────────
+const PASSWORDS={kauane:'kau123',talita:'tali123',railla:'rai123',admin:'rigolim2026'};
+
+// ── DADOS HISTÓRICOS ─────────────────────────────────────
+const HIST={
+  kau:{sal:2642,
+    realizado:[139656.86,211559.81,246627.05,0],
+    pedidos:[38,76,75,0],
+    metaMin:[50000,168000,242400,242400],metaUltra:[55000,185000,270000,270000],
+    tickReal:[3675.18,2783.68,3288.36,0],tickMeta:[3858.94,3858.94,2922.87,3452.78],
+    novosClientes:[0,0,8,0]},
+  tali:{sal:3255.21,
+    realizado:[313388.02,356936.03,350495.96,0],
+    pedidos:[96,100,100,0],
+    metaMin:[200000,392000,400000,400000],metaUltra:[230000,431000,500880,500880],
+    tickReal:[3264.46,3569.36,3504.96,0],tickMeta:[3427.68,3427.68,3747.83,3680.21],
+    novosClientes:[0,0,8,0]},
+  whats:{realizado:[32566.83,39368.66,46552.78,0],pedidos:[87,109,93,0],
+    metaMin:[23000,27000,37000,38600],metaUltra:[29500,29500,44400,46320],
+    tickReal:[374.33,361.18,500.57,0],tickMeta:[393.05,393.05,379.24,525.60],
+    novosClientes:[0,0,8,0]},
+  loja:{realizado:[7597.57,6740.80,11554.32,0],pedidos:[47,40,56,0],
+    metaMin:[4000,8000,8600,7000],metaUltra:[9000,9000,10320,8400],
+    tickReal:[161.65,168.52,206.33,0],tickMeta:[169.73,169.73,176.95,216.64],
+    novosClientes:[0,0,8,0]}
+};
+const RAILLA_SAL=3000;
+
+// Estado editável — guarda sobreposições do usuário por [chave][mês]
+const EDITS={kau:{},tali:{},whats:{},loja:{}};
+
+function getVal(key,mi,field){
+  return EDITS[key][mi]&&EDITS[key][mi][field]!==undefined ? EDITS[key][mi][field] : HIST[key][field][mi];
+}
+
+// ── CÁLCULO PRINCIPAL ─────────────────────────────────────
+function calcFrente(key,mi){
+  const h=HIST[key];
+  const real=getVal(key,mi,'realizado');
+  const ped=getVal(key,mi,'pedidos');
+  const metaMin=h.metaMin[mi],metaUltra=h.metaUltra[mi];
+  const tickR=h.tickReal[mi],tickM=h.tickMeta[mi];
+  const realAnt=mi>0?getVal(key,mi-1,'realizado'):null;
+
+  const atPct=(real/metaMin)*100, gate80=atPct>=80;
+
+  // Pedidos
+  let pedPct=0,pedFx='Abaixo do gatilho (<80%)';
+  if(atPct>140){pedPct=2;pedFx='Acima de 140%'}
+  else if(atPct>=120){pedPct=1.5;pedFx='120% – 139,99%'}
+  else if(atPct>=110){pedPct=1.25;pedFx='110% – 119,99%'}
+  else if(atPct>100){pedPct=1;pedFx='100,01% – 109,99%'}
+  else if(atPct>80&&atPct<99){pedPct=0.5;pedFx='80% – 98,99%'}
+
+  // Conversão
+  let convPct=0,convFx='Abaixo de 85%';
+  if(gate80){
+    if(atPct>=95){convPct=7;convFx='≥ 95%'}
+    else if(atPct>=90){convPct=5;convFx='90% – 94,99%'}
+    else if(atPct>=85){convPct=2;convFx='85% – 89,99%'}
+    else convFx='Abaixo de 85%';
+  } else convFx='—';
+
+  // Ticket médio
+  const tickVar=tickM>0?((tickR-tickM)/tickM)*100:0, tickAbs=Math.abs(tickVar);
+  let tickPct=0,tickFx='Abaixo de 0,5%';
+  if(gate80){
+    if(tickAbs>=7){tickPct=7;tickFx='≥ 7%'}
+    else if(tickAbs>=3){tickPct=5;tickFx='3% – 4,99%'}
+    else if(tickAbs>=0.5){tickPct=3;tickFx='0,5% – 2,99%'}
+    else tickFx='Abaixo de 0,5%';
+  } else tickFx='—';
+
+  // Crescimento
+  let crescVar=0,crescPct=0,crescFx='Sem mês anterior';
+  if(realAnt!==null&&realAnt>0){
+    crescVar=((real-realAnt)/realAnt)*100;
+    const ca=Math.abs(crescVar);
+    crescFx='Abaixo de 5%';
+    if(gate80){
+      if(ca>=20){crescPct=7;crescFx='≥ 20%'}
+      else if(ca>=10){crescPct=5;crescFx='10% – 19,99%'}
+      else if(ca>=5){crescPct=3;crescFx='5% – 9,99%'}
+    } else crescFx='—';
+  }
+
+  const rhcPct=atPct>=100?2:0, grpPct=atPct>=100?5:0;
+  const total=pedPct+convPct+tickPct+crescPct+rhcPct+grpPct;
+  return{real,ped,metaMin,metaUltra,atPct,gate80,
+    pedPct,pedFx,convPct,convFx,tickR,tickM,tickVar,tickAbs,tickPct,tickFx,
+    crescVar,crescPct,crescFx,realAnt,rhcPct,grpPct,total};
+}
+
+function calcSimples(key,mi){
+  const h=HIST[key]; const f=calcFrente(key,mi);
+  const sal=h.sal;
+  const comissao=sal*(f.total/100);
+  // MODELO ANTIGO: 1% sobre o valor de VENDAS realizado (comissão pura)
+  // Bônus meta (R$300 mínima / R$400 ultra) é separado e não acumulativo
+  const comissaoAntiga=f.real*0.01;
+  const bonusAntigo=f.real>=f.metaUltra?400:(f.real>=f.metaMin?300:0);
+  // "Antiga" na planilha = apenas comissão 1% (sem bônus na linha principal)
+  // Total antigo = salário + comissão 1% + bônus (se atingido)
+  const totalAntigo=sal+comissaoAntiga+bonusAntigo;
+  const totalNovo=sal+comissao;
+  return{...f,sal,comissao,comissaoAntiga,bonusAntigo,totalAntigo,totalNovo};
+}
+
+function calcRailla(mi){
+  const sal=RAILLA_SAL;
+  const fw=calcFrente('whats',mi), fl=calcFrente('loja',mi);
+  const comissaoW=sal*(fw.total/100), comissaoL=sal*(fl.total/100);
+  const comissao=comissaoW+comissaoL, totalNovo=sal+comissao;
+  const realTotal=fw.real+fl.real;
+  const metaMinTotal=fw.metaMin+fl.metaMin, metaUltraTotal=fw.metaUltra+fl.metaUltra;
+  const comissaoAntiga=realTotal*0.01;
+  const bonusAntigo=realTotal>=metaUltraTotal?400:(realTotal>=metaMinTotal?300:0);
+  const totalAntigo=sal+comissaoAntiga+bonusAntigo;
+  return{sal,fw,fl,comissaoW,comissaoL,comissao,totalNovo,
+    realTotal,metaMinTotal,metaUltraTotal,comissaoAntiga,bonusAntigo,totalAntigo};
+}
+
+// ── RENDER HELPERS ─────────────────────────────────────────
+function pillColor(v){
+  if(v===0)return'background:var(--cream2);color:var(--text3)';
+  if(v>=7)return'background:rgba(155,64,64,0.12);color:var(--red)';
+  if(v>=5)return'background:rgba(155,112,64,0.12);color:var(--amber)';
+  if(v>=2)return'background:var(--green-bg);color:var(--green)';
+  return'background:rgba(139,111,94,0.12);color:var(--brown)';
+}
+
+// Detalhe com valor em R$ por KPI
+function detailRows(f, sal){
+  const kpiVal=pct=>sal*(pct/100); // valor em R$ de cada KPI
+  const rows=[
+    {n:'Pedidos',desc:`Faixa: ${f.pedFx}`,pct:f.pedPct,ativo:true},
+    {n:'Conversão',desc:`${pp1(f.atPct)} da meta mín. — ${f.convFx}`,pct:f.convPct,ativo:f.gate80},
+    {n:'Ticket médio',desc:`${fmt(f.tickR)} vs meta ${fmt(f.tickM)} (${f.tickVar>=0?'+':''}${f.tickVar.toFixed(1).replace('.',',')}%) — ${f.tickFx}`,pct:f.tickPct,ativo:f.gate80},
+    {n:'Crescimento',desc:f.realAnt!==null?`${fmt(f.realAnt)} → ${fmt(f.real)} (${f.crescVar>=0?'+':''}${f.crescVar.toFixed(1).replace('.',',')}%) — ${f.crescFx}`:'Sem período anterior',pct:f.crescPct,ativo:f.gate80&&f.realAnt!==null},
+    {n:'Turbinador RHC',desc:f.rhcPct?'100% atingida':'Não atingida',pct:f.rhcPct,ativo:true},
+    {n:'Turbinador grupo',desc:f.grpPct?'100% atingida':'Não atingida',pct:f.grpPct,ativo:true},
+  ];
+  return rows.map(({n,desc,pct,ativo})=>{
+    const valBrl=kpiVal(pct);
+    return`
+    <div class="rrow">
+      <div><span class="rk-name">${n}</span><span class="rk-desc">${desc}</span></div>
+      <div style="text-align:right">
+        <div class="rv">${pp(pct)}</div>
+        ${pct>0?`<span class="rv-brl">+ ${fmt(valBrl)}</span>`:''}
+        ${!ativo?'<span class="badge b-na">sem gatilho</span>':pct>0?'<span class="badge b-hit">ativo</span>':'<span class="badge b-miss">0%</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── INPUT CARD (campos editáveis) ──────────────────────────
+function inputCard(key, mi, label){
+  const real=getVal(key,mi,'realizado');
+  const ped=getVal(key,mi,'pedidos');
+  const isEdited=EDITS[key][mi]&&(EDITS[key][mi].realizado!==undefined||EDITS[key][mi].pedidos!==undefined);
+  return`
+  <div class="input-card">
+    <div class="input-card-title">&#9998; Simular novo cenário — ${label}</div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label>Vendas realizadas (R$)</label>
+        <input class="edit-field" type="number" id="edit-real-${key}-${mi}" value="${real.toFixed(2)}" step="0.01" min="0">
+        <span class="edit-hint">Histórico: ${fmt(HIST[key].realizado[mi])}</span>
+      </div>
+      <div class="input-group">
+        <label>Qtd. pedidos</label>
+        <input class="edit-field" type="number" id="edit-ped-${key}-${mi}" value="${ped}" step="1" min="0">
+        <span class="edit-hint">Histórico: ${HIST[key].pedidos[mi]}</span>
+      </div>
+    </div>
+    <button class="calc-btn" onclick="applyEdit('${key}',${mi})">
+      ${isEdited?'&#8635; Recalcular':'&#9654; Calcular simulação'}
+    </button>
+    ${isEdited?`<button class="calc-btn" style="background:transparent;color:var(--text2);border:1.5px solid var(--border);margin-top:6px" onclick="resetEdit('${key}',${mi})">&#8592; Restaurar dados reais</button>`:''}
+  </div>`;
+}
+
+function applyEdit(key,mi){
+  const real=parseFloat(document.getElementById(`edit-real-${key}-${mi}`).value)||0;
+  const ped=parseInt(document.getElementById(`edit-ped-${key}-${mi}`).value)||0;
+  if(!EDITS[key][mi])EDITS[key][mi]={};
+  EDITS[key][mi].realizado=real;
+  EDITS[key][mi].pedidos=ped;
+  renderApp();
+}
+function resetEdit(key,mi){
+  if(EDITS[key][mi]){delete EDITS[key][mi].realizado;delete EDITS[key][mi].pedidos;}
+  renderApp();
+}
+
+// ── BUILD PANELS ───────────────────────────────────────────
+function buildSimples(key, mi){
+  const r=calcSimples(key,mi);
+  const isEdited=EDITS[key][mi]&&(EDITS[key][mi].realizado!==undefined);
+  return`
+    ${mi===0?'<div class="ref-box">Janeiro é o primeiro mês — crescimento não calculado por ausência de período anterior.</div>':''}
+    ${isEdited?'<div class="ref-box" style="background:rgba(74,124,89,0.08);border-color:rgba(74,124,89,0.2);color:var(--green)">&#9998; Exibindo simulação com valores editados — clique em "Restaurar dados reais" para voltar ao histórico.</div>':''}
+    ${inputCard(key,mi,key==='kau'?'Kauane':'Talita')}
+    <div class="metrics-grid g4">
+      <div class="metric"><div class="metric-label">Vendas realizadas</div><div class="metric-value" style="font-size:15px">${fmt(r.real)}</div><div class="metric-sub">Meta mín: ${fmt(r.metaMin)}</div></div>
+      <div class="metric"><div class="metric-label">Atingimento</div><div class="metric-value">${pp1(r.atPct)}</div><div class="metric-sub">${r.gate80?'✓ Gatilho atingido':'✗ Gatilho não atingido'}</div></div>
+      <div class="metric"><div class="metric-label">Valoração total</div><div class="metric-value">${pp(r.total)}</div></div>
+      <div class="metric"><div class="metric-label">Comissão</div><div class="metric-value" style="font-size:15px">${fmt(r.comissao)}</div></div>
+    </div>
+    <div class="g2-col">
+      <div class="card">
+        <div class="card-title">Detalhamento por KPI — % e valor em R$</div>
+        ${detailRows(r, r.sal)}
+      </div>
+      <div>
+        <div class="total-box">
+          <div class="total-label">Remuneração total — novo modelo</div>
+          <div class="total-value">${fmt(r.totalNovo)}</div>
+          <div class="total-sub">${fmt(r.sal)} base + ${fmt(r.comissao)} comissão (${pp(r.total)})</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Composição</div>
+          <div class="rrow"><span class="rk">Salário base</span><span class="rv">${fmt(r.sal)}</span></div>
+          <div class="rrow"><span class="rk">Comissão variável (${pp(r.total)})</span><span class="rv">${fmt(r.comissao)}</span></div>
+          <div class="rrow" style="border-top:1.5px solid var(--border2);padding-top:10px;margin-top:4px">
+            <span style="font-weight:600;color:var(--rose)">Total</span>
+            <span style="font-weight:600;color:var(--rose);font-family:'DM Mono',monospace">${fmt(r.totalNovo)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildRailla(mi){
+  const r=calcRailla(mi);
+  const editedW=EDITS.whats[mi]&&EDITS.whats[mi].realizado!==undefined;
+  const editedL=EDITS.loja[mi]&&EDITS.loja[mi].realizado!==undefined;
+  return`
+    ${mi===0?'<div class="ref-box">Janeiro é o primeiro mês — crescimento não calculado por ausência de período anterior.</div>':''}
+    ${(editedW||editedL)?'<div class="ref-box" style="background:rgba(74,124,89,0.08);border-color:rgba(74,124,89,0.2);color:var(--green)">&#9998; Exibindo simulação com valores editados.</div>':''}
+    <div class="g2-col" style="margin-bottom:16px">
+      ${inputCard('whats',mi,'Whats')}
+      ${inputCard('loja',mi,'Loja')}
+    </div>
+    <div class="metrics-grid g4">
+      <div class="metric"><div class="metric-label"><span class="chip-w">Whats</span> Realizado</div><div class="metric-value" style="font-size:14px">${fmt(r.fw.real)}</div></div>
+      <div class="metric"><div class="metric-label"><span class="chip-l">Loja</span> Realizado</div><div class="metric-value" style="font-size:14px">${fmt(r.fl.real)}</div></div>
+      <div class="metric"><div class="metric-label">Comissão total</div><div class="metric-value" style="font-size:14px">${fmt(r.comissao)}</div></div>
+      <div class="metric"><div class="metric-label">Remuneração total</div><div class="metric-value" style="font-size:14px">${fmt(r.totalNovo)}</div></div>
+    </div>
+    <div class="g2-col" style="margin-bottom:18px">
+      <div class="card">
+        <div class="card-title"><span class="chip-w">Whats</span>&nbsp; Ating. ${pp1(r.fw.atPct)} — ${pp(r.fw.total)}</div>
+        ${detailRows(r.fw, r.sal)}
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="chip-l">Loja</span>&nbsp; Ating. ${pp1(r.fl.atPct)} — ${pp(r.fl.total)}</div>
+        ${detailRows(r.fl, r.sal)}
+      </div>
+    </div>
+    <div class="g2-col">
+      <div class="card">
+        <div class="card-title">Resumo por frente</div>
+        <div class="rrow"><span class="rk"><span class="chip-w">Whats</span>&nbsp; ${pp(r.fw.total)} s/ salário</span><span class="rv">${fmt(r.comissaoW)}</span></div>
+        <div class="rrow"><span class="rk"><span class="chip-l">Loja</span>&nbsp; ${pp(r.fl.total)} s/ salário</span><span class="rv">${fmt(r.comissaoL)}</span></div>
+        <div class="rrow" style="border-top:1.5px solid var(--border2);padding-top:10px;margin-top:4px">
+          <span style="font-weight:600">Total comissão</span>
+          <span style="font-weight:600;font-family:'DM Mono',monospace">${fmt(r.comissao)}</span>
+        </div>
+      </div>
+      <div>
+        <div class="total-box">
+          <div class="total-label">Remuneração final</div>
+          <div class="total-value">${fmt(r.totalNovo)}</div>
+          <div class="total-sub">${fmt(r.sal)} base + ${fmt(r.comissao)} comissão</div>
+        </div>
+        <div class="card">
+          <div class="rrow"><span class="rk">Salário base</span><span class="rv">${fmt(r.sal)}</span></div>
+          <div class="rrow"><span class="rk">Comissão Whats</span><span class="rv">${fmt(r.comissaoW)}</span></div>
+          <div class="rrow"><span class="rk">Comissão Loja</span><span class="rv">${fmt(r.comissaoL)}</span></div>
+          <div class="rrow" style="border-top:1.5px solid var(--border2);padding-top:10px;margin-top:4px">
+            <span style="font-weight:600;color:var(--rose)">Total</span>
+            <span style="font-weight:600;color:var(--rose);font-family:'DM Mono',monospace">${fmt(r.totalNovo)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildCompare(mi){
+  const rk=calcSimples('kau',mi),rt=calcSimples('tali',mi),rr=calcRailla(mi);
+  const total=rk.totalNovo+rt.totalNovo+rr.totalNovo;
+  const ind=[['Pedidos',rk.pedPct,rt.pedPct,rr.fw.pedPct,rr.fl.pedPct],['Conversão',rk.convPct,rt.convPct,rr.fw.convPct,rr.fl.convPct],['Ticket médio',rk.tickPct,rt.tickPct,rr.fw.tickPct,rr.fl.tickPct],['Crescimento',rk.crescPct,rt.crescPct,rr.fw.crescPct,rr.fl.crescPct],['Turb. RHC',rk.rhcPct,rt.rhcPct,rr.fw.rhcPct,rr.fl.rhcPct],['Turb. grupo',rk.grpPct,rt.grpPct,rr.fw.grpPct,rr.fl.grpPct]];
+  return`
+    <div class="metrics-grid g4">
+      <div class="metric"><div class="metric-label">Total time</div><div class="metric-value" style="font-size:16px">${fmt(total)}</div></div>
+      <div class="metric"><div class="metric-label">Kauane</div><div class="metric-value" style="font-size:14px">${fmt(rk.totalNovo)}</div><div class="metric-sub">${pp(rk.total)} comissão · ${fmt(rk.comissao)}</div></div>
+      <div class="metric"><div class="metric-label">Talita</div><div class="metric-value" style="font-size:14px">${fmt(rt.totalNovo)}</div><div class="metric-sub">${pp(rt.total)} comissão · ${fmt(rt.comissao)}</div></div>
+      <div class="metric"><div class="metric-label">Railla</div><div class="metric-value" style="font-size:14px">${fmt(rr.totalNovo)}</div><div class="metric-sub">Whats + Loja · ${fmt(rr.comissao)}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Valoração por indicador</div>
+      <table class="ctable">
+        <thead><tr><th>Indicador</th><th>Kauane</th><th>Talita</th><th>Railla Whats</th><th>Railla Loja</th></tr></thead>
+        <tbody>
+          ${ind.map(([n,vk,vt,vw,vl])=>`<tr><td style="color:var(--text2)">${n}</td><td><span class="pill" style="${pillColor(vk)}">${pp(vk)}</span></td><td><span class="pill" style="${pillColor(vt)}">${pp(vt)}</span></td><td><span class="pill" style="${pillColor(vw)}">${pp(vw)}</span></td><td><span class="pill" style="${pillColor(vl)}">${pp(vl)}</span></td></tr>`).join('')}
+          <tr class="tr-sep"><td colspan="5">Remuneração</td></tr>
+          <tr><td style="color:var(--text2)">Salário base</td><td>${fmt(rk.sal)}</td><td>${fmt(rt.sal)}</td><td colspan="2" style="text-align:right">${fmt(RAILLA_SAL)} (base única)</td></tr>
+          <tr><td style="color:var(--text2)">Comissão</td><td>${fmt(rk.comissao)}</td><td>${fmt(rt.comissao)}</td><td>${fmt(rr.comissaoW)}</td><td>${fmt(rr.comissaoL)}</td></tr>
+          <tr class="tr-bold"><td>Total</td><td>${fmt(rk.totalNovo)}</td><td>${fmt(rt.totalNovo)}</td><td colspan="2" style="text-align:right">${fmt(rr.totalNovo)}</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function buildAntesDep(mi){
+  const rk=calcSimples('kau',mi),rt=calcSimples('tali',mi),rr=calcRailla(mi);
+  const totA=rk.totalAntigo+rt.totalAntigo+rr.totalAntigo;
+  const totD=rk.totalNovo+rt.totalNovo+rr.totalNovo;
+  const totDelta=totD-totA;
+
+  function bloco(nome,sal,comNovo,totNovo,realV,comAnt,mMin,mUlt,bon,totAnt){
+    const d=totNovo-totAnt;
+    // comAnt = realV * 1% (coluna "Antiga" da planilha)
+    return`<div class="g2-col" style="margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">${nome} — Modelo antigo</div>
+        <div class="before-box">
+          <div class="before-label">Comissão variável (modelo antigo)</div>
+          <div class="before-value">${fmt(comAnt)}</div>
+          <div style="font-size:12px;color:var(--red);margin-top:4px;opacity:.75">${fmt(realV)} × 1%</div>
+        </div>
+        <div class="card">
+          <div class="rrow"><span class="rk">Salário base</span><span class="rv">${fmt(sal)}</span></div>
+          <div class="rrow">
+            <div><span class="rk-name">Comissão 1% s/ vendas</span><span class="rk-desc">${fmt(realV)} × 1%</span></div>
+            <span class="rv">${fmt(comAnt)}</span>
+          </div>
+          <div class="rrow">
+            <div><span class="rk-name">Bônus meta</span><span class="rk-desc">${realV>=mUlt?'Ultra atingida — R$ 400,00':realV>=mMin?'Mínima atingida — R$ 300,00':'Meta não atingida'}</span></div>
+            <span class="rv">${fmt(bon)}</span>
+          </div>
+          <div class="rrow" style="border-top:1.5px solid var(--border2);padding-top:10px;margin-top:4px">
+            <span style="font-weight:600">Total com salário</span>
+            <span style="font-weight:600;font-family:'DM Mono',monospace">${fmt(totAnt)}</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">${nome} — Novo modelo</div>
+        <div class="total-box"><div class="total-label">Total novo</div><div class="total-value">${fmt(totNovo)}</div></div>
+        <div class="card">
+          <div class="rrow"><span class="rk">Salário base</span><span class="rv">${fmt(sal)}</span></div>
+          <div class="rrow"><span class="rk">Comissão variável Multicanais</span><span class="rv">${fmt(comNovo)}</span></div>
+          <div class="rrow" style="border-top:1.5px solid var(--border2);padding-top:10px;margin-top:4px">
+            <span style="font-weight:600">Total novo</span>
+            <span style="font-weight:600;font-family:'DM Mono',monospace">${fmt(totNovo)}</span>
+          </div>
+        </div>
+        <div class="delta-box ${d>=0?'pos':'neg'}">
+          <div class="delta-label" style="color:${d>=0?'var(--green)':'var(--red)'}">Variação vs modelo antigo</div>
+          <div class="delta-value" style="color:${d>=0?'var(--green)':'var(--red)'}">${d>=0?'+':''}${fmt(d)}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return`
+    <div class="metrics-grid g3">
+      <div class="metric"><div class="metric-label">Total antes (time)</div><div class="metric-value" style="font-size:16px">${fmt(totA)}</div><div class="metric-sub">1% s/ vendas + bônus meta</div></div>
+      <div class="metric"><div class="metric-label">Total depois (time)</div><div class="metric-value" style="font-size:16px">${fmt(totD)}</div><div class="metric-sub">Novo modelo Multicanais</div></div>
+      <div class="metric"><div class="metric-label">Impacto no time</div>
+        <div class="metric-value" style="font-size:16px;color:${totDelta>=0?'var(--green)':'var(--red)'}">${totDelta>=0?'+':''}${fmt(totDelta)}</div>
+        <div class="metric-sub">${totDelta>=0?'Novo modelo é maior':'Novo modelo é menor'}</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Resumo comparativo — comissão variável por vendedora</div>
+      <table class="ctable">
+        <thead><tr><th>Vendedora</th><th>Salário base</th><th>Comissão antiga (1%)</th><th>Bônus meta</th><th>Total antigo</th><th>Comissão nova</th><th>Total novo</th><th>Variação</th></tr></thead>
+        <tbody>
+          ${[
+            {n:'Kauane',r:rk},
+            {n:'Talita',r:rt},
+            {n:'Railla',r:rr,isRailla:true},
+          ].map(({n,r,isRailla})=>{
+            const delta=r.totalNovo-r.totalAntigo;
+            return`<tr>
+              <td style="font-weight:500">${n}</td>
+              <td>${fmt(r.sal)}</td>
+              <td>${fmt(r.comissaoAntiga)}</td>
+              <td>${fmt(r.bonusAntigo)}</td>
+              <td style="font-weight:500">${fmt(r.totalAntigo)}</td>
+              <td>${fmt(isRailla?r.comissao:r.comissao)}</td>
+              <td style="font-weight:500">${fmt(r.totalNovo)}</td>
+              <td style="font-weight:600;color:${delta>=0?'var(--green)':'var(--red)'}">${delta>=0?'+':''}${fmt(delta)}</td>
+            </tr>`;
+          }).join('')}
+          <tr class="tr-bold">
+            <td>Total</td>
+            <td>—</td>
+            <td>${fmt(rk.comissaoAntiga+rt.comissaoAntiga+rr.comissaoAntiga)}</td>
+            <td>${fmt(rk.bonusAntigo+rt.bonusAntigo+rr.bonusAntigo)}</td>
+            <td>${fmt(totA)}</td>
+            <td>${fmt(rk.comissao+rt.comissao+rr.comissao)}</td>
+            <td>${fmt(totD)}</td>
+            <td style="color:${totDelta>=0?'var(--green)':'var(--red)'}">${totDelta>=0?'+':''}${fmt(totDelta)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 20px">
+    ${bloco('Kauane',rk.sal,rk.comissao,rk.totalNovo,rk.real,rk.comissaoAntiga,rk.metaMin,rk.metaUltra,rk.bonusAntigo,rk.totalAntigo)}
+    <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 20px">
+    ${bloco('Talita',rt.sal,rt.comissao,rt.totalNovo,rt.real,rt.comissaoAntiga,rt.metaMin,rt.metaUltra,rt.bonusAntigo,rt.totalAntigo)}
+    <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 20px">
+    ${bloco('Railla (Whats+Loja)',rr.sal,rr.comissao,rr.totalNovo,rr.realTotal,rr.comissaoAntiga,rr.metaMinTotal,rr.metaUltraTotal,rr.bonusAntigo,rr.totalAntigo)}`;
+}
+
+// ── APP STATE ───────────────────────────────────────────────
+let currentUser=null, currentMonth=3, currentTab=0;
+
+const profiles={
+  kauane:{chip:'Kauane — Revenda',tabs:[{id:'meu',label:'Minha comissão'}]},
+  talita:{chip:'Talita — Revenda',tabs:[{id:'meu',label:'Minha comissão'}]},
+  railla:{chip:'Railla — Varejo',tabs:[{id:'meu',label:'Minha comissão'}]},
+  admin:{chip:'★ Admin / CCO',tabs:[{id:'kauane',label:'Kauane'},{id:'talita',label:'Talita'},{id:'railla',label:'Railla'},{id:'compare',label:'Time completo'},{id:'antesdepois',label:'Antes vs Depois'}]},
+};
+
+function getPanelContent(tabId,mi){
+  if(tabId==='meu'){
+    if(currentUser==='kauane') return buildSimples('kau',mi);
+    if(currentUser==='talita') return buildSimples('tali',mi);
+    if(currentUser==='railla') return buildRailla(mi);
+  }
+  if(tabId==='kauane') return buildSimples('kau',mi);
+  if(tabId==='talita') return buildSimples('tali',mi);
+  if(tabId==='railla') return buildRailla(mi);
+  if(tabId==='compare') return buildCompare(mi);
+  if(tabId==='antesdepois') return buildAntesDep(mi);
+  return '';
+}
+
+function renderApp(){
+  if(!currentUser||!profiles[currentUser])return;
+  const prof=profiles[currentUser];
+  const tabs=prof.tabs;
+  document.getElementById('tabnav').innerHTML=tabs.map((t,i)=>`<div class="tab${i===currentTab?' active':''}" onclick="switchTab(${i})">${t.label}</div>`).join('');
+  document.getElementById('month-title').textContent=meses[currentMonth];
+  document.getElementById('panels').innerHTML=getPanelContent(tabs[currentTab].id,currentMonth);
+}
+
+function switchTab(i){currentTab=i;renderApp()}
+function setMonth(i,el){
+  currentMonth=i;
+  document.querySelectorAll('.month-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  renderApp();
+}
+
+// ── AUTH ────────────────────────────────────────────────────
+const MODAL_META={
+  kauane:{name:'Kauane',role:'Revenda · Vendedora',cls:'av-k',letter:'K'},
+  talita:{name:'Talita',role:'Revenda · Vendedora',cls:'av-t',letter:'T'},
+  railla:{name:'Railla',role:'Varejo · Vendedora',cls:'av-r',letter:'R'},
+  admin:{name:'Admin / CCO',role:'Acesso completo a todos os colaboradores',cls:'av-admin',letter:'★'},
+};
+let pendingUser=null;
+
+function openModal(user){
+  pendingUser=user;
+  const m=MODAL_META[user];
+  const av=document.getElementById('modal-avatar');
+  av.className='modal-avatar '+m.cls;
+  av.textContent=m.letter;
+  document.getElementById('modal-name').textContent=m.name;
+  document.getElementById('modal-role').textContent=m.role;
+  document.getElementById('modal-error').style.display='none';
+  document.getElementById('modal-pass').value='';
+  document.getElementById('pass-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('modal-pass').focus(),80);
+}
+function closeModal(){
+  document.getElementById('pass-modal').style.display='none';
+  pendingUser=null;
+}
+function checkPassword(){
+  if(document.getElementById('modal-pass').value===PASSWORDS[pendingUser]){
+    var user=pendingUser;
+    closeModal();
+    doLogin(user);
+  } else {
+    document.getElementById('modal-error').style.display='block';
+    document.getElementById('modal-pass').value='';
+    document.getElementById('modal-pass').focus();
+  }
+}
+function doLogin(user){
+  if(!profiles[user]){console.error('Perfil nao encontrado:',user);return;}
+  currentUser=user; currentTab=0; currentMonth=3;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-chip').textContent=profiles[user].chip;
+  document.querySelectorAll('.month-btn').forEach(function(b,i){b.classList.toggle('sel',i===3);});
+  renderApp();
+}
+function doLogout(){
+  currentUser=null; currentMonth=3; currentTab=0;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+</script>
+</body>
+</html>
